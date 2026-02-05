@@ -1,0 +1,5 @@
+{
+  "name": "JUCE Typing Tutor",
+  "description": "A specialized typing practice application for C++ audio developers learning the JUCE framework. Master filters and synthesizers by typing real code.",
+  "requestFramePermissions": []
+}
