@@ -36,14 +36,14 @@ Japanese:
 2) タイトル、説明、タグ、ファイル内容を入力します。
 3) 行ごとに「auto / type」を選び、Save/Addで保存します。
 
-## Development
+## How to Install
 
-- Start dev server: `npm run dev`
-- Build: `npm run build`
-- Preview: `npm run preview`
+1) Download the latest `.msi` file (example: `Typing Tutor_0.1.0_x64_en-US.msi`).
+2) Double-click the `.msi` and follow the installer.
+3) Launch the app from Start Menu or Desktop shortcut.
 
-## 開発
+Japanese:
 
-- 開発サーバ起動: `npm run dev`
-- ビルド: `npm run build`
-- プレビュー: `npm run preview`
+1) GitHub Releases から最新の `.msi` をダウンロードします。
+2) `.msi` をダブルクリックしてインストールします。
+3) スタートメニューやデスクトップのショートカットから起動します。
