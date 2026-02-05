@@ -134,3 +134,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Tauri (Rust) build output
+src-tauri/target/
+
+# Vite build output
+dist/
+
+# Vite cache
+.vite/
