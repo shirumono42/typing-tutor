@@ -1,0 +1,3 @@
+[build]
+# Keep build outputs inside the repo.
+target-dir = "target"
