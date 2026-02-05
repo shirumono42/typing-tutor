@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getLessons, UI_LABELS } from './constants';
-import { AppMode, TypingStats, CodeSegment, Language, LessonId, LessonFileKey, SegmentType, LessonData, ProgrammingLanguage } from './types';
+import { AppMode, TypingStats, CodeSegment, LessonId, LessonFileKey, SegmentType, LessonData, ProgrammingLanguage } from './types';
 import TypingArea from './components/TypingArea';
 
 const App: React.FC = () => {
@@ -8,8 +8,8 @@ const App: React.FC = () => {
   const [activeLessonId, setActiveLessonId] = useState<LessonId | null>(null);
   const [activeFile, setActiveFile] = useState<LessonFileKey | null>(null);
   const [stats, setStats] = useState<TypingStats | null>(null);
-  const [language, setLanguage] = useState<Language>(Language.EN);
   const [customLessons, setCustomLessons] = useState<LessonData[]>([]);
+  const [hiddenBuiltInLessonIds, setHiddenBuiltInLessonIds] = useState<LessonId[]>([]);
 
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -24,17 +24,22 @@ const App: React.FC = () => {
     language: ProgrammingLanguage;
   };
 
-  const createEmptyDraftFile = (): DraftFile => ({ key: '', content: '', lineTypes: [], language: 'c_cpp' });
+  const createEmptyDraftFile = (): DraftFile => ({ key: '', content: '', lineTypes: [], language: 'javascript' });
   const [draftFiles, setDraftFiles] = useState<DraftFile[]>([createEmptyDraftFile()]);
 
-  const builtInLessons = useMemo(() => getLessons(language), [language]);
-  const lessons = useMemo(() => [...builtInLessons, ...customLessons], [builtInLessons, customLessons]);
+  const builtInLessons = useMemo(() => getLessons(), []);
+  const builtInLessonIds = useMemo(() => new Set(builtInLessons.map((lesson) => lesson.id)), [builtInLessons]);
+  const visibleBuiltInLessons = useMemo(
+    () => builtInLessons.filter((lesson) => !hiddenBuiltInLessonIds.includes(lesson.id)),
+    [builtInLessons, hiddenBuiltInLessonIds]
+  );
+  const lessons = useMemo(() => [...visibleBuiltInLessons, ...customLessons], [visibleBuiltInLessons, customLessons]);
   const lessonsById = useMemo(() => {
     const map: Record<string, LessonData> = {};
     lessons.forEach((lesson) => { map[lesson.id] = lesson; });
     return map;
   }, [lessons]);
-  const labels = UI_LABELS[language];
+  const labels = UI_LABELS;
 
   useEffect(() => {
     const stored = localStorage.getItem('customLessons');
@@ -79,8 +84,25 @@ const App: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('hiddenBuiltInLessonIds');
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as LessonId[];
+      if (Array.isArray(parsed)) {
+        setHiddenBuiltInLessonIds(parsed);
+      }
+    } catch {
+      setHiddenBuiltInLessonIds([]);
+    }
+  }, []);
+
   const persistCustomLessons = (next: LessonData[]) => {
     localStorage.setItem('customLessons', JSON.stringify(next));
+  };
+
+  const persistHiddenBuiltInLessonIds = (next: LessonId[]) => {
+    localStorage.setItem('hiddenBuiltInLessonIds', JSON.stringify(next));
   };
 
   const startLesson = (lessonId: LessonId) => {
@@ -245,6 +267,14 @@ const App: React.FC = () => {
     if (editingLessonId === lessonId) resetForm();
   };
 
+  const handleHideBuiltInLesson = (lessonId: LessonId) => {
+    if (!builtInLessonIds.has(lessonId)) return;
+    if (hiddenBuiltInLessonIds.includes(lessonId)) return;
+    const next = [...hiddenBuiltInLessonIds, lessonId];
+    setHiddenBuiltInLessonIds(next);
+    persistHiddenBuiltInLessonIds(next);
+  };
+
   const handleAddLesson = () => {
     const title = newTitle.trim();
     const description = newDescription.trim();
@@ -317,7 +347,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-tr from-orange-500 to-red-500 rounded flex items-center justify-center font-bold text-white">
-              J
+              T
             </div>
             <h1 className="text-xl font-bold tracking-tight">{labels.title}</h1>
           </div>
@@ -347,20 +377,6 @@ const App: React.FC = () => {
                     {labels.createBack}
                   </button>
                 )}
-                <div className="flex items-center gap-2 bg-slate-900 rounded-lg p-1 border border-slate-800">
-                  <button
-                    onClick={() => setLanguage(Language.EN)}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${language === Language.EN ? 'bg-slate-700 text-white font-medium' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => setLanguage(Language.JP)}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${language === Language.JP ? 'bg-slate-700 text-white font-medium' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    日本語
-                  </button>
-                </div>
               </div>
             )}
           </div>
@@ -404,6 +420,17 @@ const App: React.FC = () => {
                     <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">{lesson.title}</h2>
                     {lesson.isCustom && (
                       <span className="text-xs px-2 py-1 rounded bg-emerald-900/40 text-emerald-300 border border-emerald-700/40">Custom</span>
+                    )}
+                    {!lesson.isCustom && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleHideBuiltInLesson(lesson.id);
+                        }}
+                        className="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:text-white"
+                      >
+                        {labels.createDeleteButton}
+                      </button>
                     )}
                   </div>
                   <p className="text-slate-400 mb-6">{lesson.description}</p>
@@ -495,7 +522,7 @@ const App: React.FC = () => {
                   value={newTags}
                   onChange={(e) => setNewTags(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
-                  placeholder="C++, DSP"
+                  placeholder="hoge, fuga"
                 />
               </div>
 
@@ -521,7 +548,7 @@ const App: React.FC = () => {
                             value={file.key}
                             onChange={(e) => updateDraftFileKey(fileIndex, e.target.value)}
                             className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm"
-                            placeholder="typing.cpp"
+                            placeholder="example.js"
                           />
                         </div>
                         <div className="w-full md:w-48">

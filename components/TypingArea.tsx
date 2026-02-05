@@ -64,7 +64,7 @@ const getHighlightPatterns = (language: ProgrammingLanguage): HighlightPattern[]
         default:
             return [
                 { regex: /\b(class|public|private|protected|void|int|float|double|bool|char|auto|const|override|virtual|return|if|else|for|while|do|switch|case|break|continue|namespace|using|struct|template|typename|new|delete|this|sizeof|static|friend|true|false|nullptr|enum|unsigned|long)\b/g, cls: 'text-purple-400' },
-                { regex: /\b(juce::[a-zA-Z0-9_:]+|[A-Z][a-zA-Z0-9_]*)\b/g, cls: 'text-yellow-300' },
+                { regex: /\b[A-Z][a-zA-Z0-9_]*\b/g, cls: 'text-yellow-300' },
                 { regex: /\b\w+(?=\s*\()/g, cls: 'text-blue-300' },
                 { regex: /\b\d+(\.\d+)?f?\b/g, cls: 'text-orange-300' },
                 { regex: /^\s*#\w+/gm, cls: 'text-cyan-400' },

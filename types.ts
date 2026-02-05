@@ -6,15 +6,14 @@ export enum AppMode {
 }
 
 export enum LessonType {
-  FILTER = 'FILTER',
-  SYNTH = 'SYNTH',
+  BASICS = 'BASICS',
+  HELPERS = 'HELPERS',
 }
 
 export enum FileType {
-  PROCESSOR_H = 'PluginProcessor.h',
-  PROCESSOR_CPP = 'PluginProcessor.cpp',
-  EDITOR_H = 'PluginEditor.h',
-  EDITOR_CPP = 'PluginEditor.cpp',
+  MAIN_JS = 'main.js',
+  MAIN_TS = 'main.ts',
+  UTILS_TS = 'utils.ts',
 }
 
 export type LessonId = LessonType | string;
@@ -48,9 +47,4 @@ export interface TypingStats {
   mistakes: number;
   startTime: number | null;
   endTime: number | null;
-}
-
-export enum Language {
-  EN = 'EN',
-  JP = 'JP',
 }
